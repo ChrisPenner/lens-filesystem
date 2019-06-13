@@ -1,10 +1,12 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeFamilies #-}
 module Lib where
 
 import Control.Lens
 import Control.Lens.Action
+import Control.Lens.Action.Internal
 import Control.Lens.Action.Type
 import System.Directory
 import System.FilePath.Posix
@@ -18,13 +20,15 @@ data Location = Location{ locPath :: FilePath, locType ::  FileType}
 type IndexUsingAction i m s a = forall p r f. (Conjoined p, Effective m r f) => Indexed FilePath (p String (f String)) (p a (f a))
 type IndexUsingFileAction s a = IndexUsingAction FilePath IO s a
 
+type Blah i m s a = forall f r s p. (Effective m r f, Indexable i p) => (p a (f a)) -> Indexed i s (f s)
 
-contents' :: Action IO FilePath String
-contents' = act action
+
+contents :: forall f r s p. (Effective IO r f, Indexable FilePath p) => (p String (f String)) -> Indexed FilePath s (f s)
+contents overContents = Indexed go
   where
-    action (absPth) = readFile absPth
+    go fp s = effective (readFile fp >>= ineffective . indexed overContents fp) $> s
 
-contents = asIndex . contents'
+    -- asIndex . contents'
 
 -- contents :: forall f p r. (Functor f, Indexable FilePath p, Effective IO r f) => p String (f String) -> Indexed FilePath Location (f Location)
 
@@ -37,6 +41,9 @@ file :: (Indexable FilePath p, Contravariant f, Functor f) => FilePath -> p s (f
 file filePath = withIndex . ito addFile
   where
     addFile (pth, next) = (pth </> filePath, next)
+
+file' :: Indexable FilePath p => FilePath -> (Indexed FilePath a b -> r) -> p a b -> r
+file' filePath = reindexed (</> filePath)
 
 -- file' :: (Indexable FilePath p, Contravariant f, Functor f) => FilePath -> p s (f s) -> Indexed FilePath s (f s)
 -- file' :: FilePath -> (Indexable FilePath p, Contravariant f) => Over' p f s a
@@ -52,11 +59,31 @@ file filePath = withIndex . ito addFile
 --   where
 --     go (Location pth typ) = Location (pth </> path) typ
 
+ls :: forall f r s p. (Effective IO r f, Indexable FilePath p) => (p [FilePath] (f [FilePath])) -> Indexed FilePath s (f s)
+ls overContents = Indexed go
+  where
+    go dirPath s = effective (listDirectory dirPath >>= ineffective . indexed overContents dirPath) $> s
+
+-- This is more restrictive than it needs to be
+dir ::
+  FilePath
+  -> Indexed FilePath s (Effect m r s)
+  -> Indexed FilePath s (Effect m r s)
+dir = file
+
 relativeTo :: forall p f a. FilePath -> (Indexable FilePath p, Contravariant f) => Over' p f a a
 relativeTo pth = ito (\a -> (pth, a))
 
+main :: IO ()
 main = do
-    (Location "README.md" File) ^!! relativeTo "/Users/chris" . file ".bashrc" . contents . lined
+    -- stuff <- () ^!! relativeTo "." . file "README.md" . contents . lined
+    fileContents <- () ^!! relativeTo "." . file "README.md" . contents . lined
+    print fileContents
+    dirContents <- () ^! relativeTo "." . dir "src" . ls
+    print dirContents
+    -- stuff2 <- () ^! relativeTo "/Users/chris" . file ".bashrc" . contents . lined
+    return ()
+    -- (Location "README.md" File) ^!! relativeTo "/Users/chris" . file' ".bashrc" -- . contents . lined
 
 
 -- fs !.. dir "." . filtered ((~~ "pictures.*") . name) . contents . subdir "hawaii" . crawled . files . contents
