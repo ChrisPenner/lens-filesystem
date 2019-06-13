@@ -2,7 +2,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeFamilies #-}
-module Lib where
+module Indexed where
 
 import Control.Lens
 import Control.Lens.Action
@@ -73,6 +73,21 @@ dir = file
 
 relativeTo :: forall p f a. FilePath -> (Indexable FilePath p, Contravariant f) => Over' p f a a
 relativeTo pth = ito (\a -> (pth, a))
+
+-- p a (f b) -> p s (f t)
+-- filteredM :: (Choice p, Applicative f) => (a -> m Bool) -> Optic' p f a a
+--Action m s a = forall f r. Effective m r f => (a -> f a) -> s -> f s
+-- filteredM :: (a -> m Bool) -> Action m a a
+filteredM :: (Effective m r f) => (r -> m Bool) -> (r -> f a) -> r -> f a
+filteredM predicate f a = effective go
+  where
+    -- go :: IO a
+    go = do
+        b <- (predicate a)
+        if b then ineffective $ f a
+             else pure a
+
+-- indicesM
 
 main :: IO ()
 main = do
