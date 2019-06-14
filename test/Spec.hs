@@ -113,29 +113,12 @@ main = do
           [1 :: Int, 2, 3] ^!! traversed . filteredM (pure . odd)
             `shouldReturn` [1, 3]
 
-      describe "unioned" $ do
+      describe "merging" $ do
         it "should combine elements from multiple folds" $ do
-          [1 :: Int, 2, 3] ^!! traversed . unioned (to (*10)) (to (*100))
-            `shouldReturn` [10,100,20,200,30,300]
+          [1 :: Int, 2, 3] ^!! traversed . merging (to (*10)) (to (*100))
+            `shouldReturn` [10, 100, 20, 200, 30, 300]
 
-
-
--- main :: IO ()
--- main = do
-    -- "." ^!! file "README.md" . contents . lined !%~ print
-    -- "." &! file "README.md" . contents . lined !%~ print
-    -- "." &! file "README.md" !%~ flip renamePath "README2.md"
-    -- Config "." & workDir . file "README.md" !%~ flip renamePath "README2.md"
-    -- Config "." & workDir . file "README2.md" !%~ flip renamePath "README.md"
-    -- r <- Config "." & workDir . file "README.md" !%~ pure
-    -- r <- Config "." & workDir . ls . traversed !!%= pure
-    -- r <- Config "." & workDir . ls . traversed . try ls . traversed !!%~ id
-    -- Config "." ^! workDir . ls . traversed . dirs . act print
-    -- Config "." ^! workDir . crawled . symLinked . absoluting . act print
-    -- Config "." ^! workDir . ls . traversed . symLinked . act print
-    -- "." ^! path ("src" </> "Control" </> "Lens") . crawled . act print
-    -- "." ^! path ("src" </> "Control") . crawled . dirs . localized getCurrentDirectory . act print
-    -- "." ^! crawled . exts ["hs", "md"] . act print
-    -- dirContents <- "." ^!! ls . traversed . filteredM doesDirectoryExist
-    -- print dirContents
-    -- return ()
+      describe "including" $ do
+        it "should add new elements while keeping old ones" $ do
+          [1 :: Int, 2, 3] ^!! traversed . including (to (*10))
+            `shouldReturn` [1, 10, 2, 20, 3, 30]

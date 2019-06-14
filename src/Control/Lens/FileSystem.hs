@@ -26,7 +26,8 @@ module Control.Lens.FileSystem
     , tryOrContinue
     , tryCatch
     , filteredM
-    , unioned
+    , merging
+    , including
 
     , (!%~)
     , (!!%~)
@@ -68,13 +69,13 @@ exts extList = filtered check
     check fp = drop 1 (takeExtension fp) `elem` extList
 
 crawled :: Monoid r => Acting IO r FilePath FilePath
-crawled = unioned id (dirs . ls . traversed . crawled)
+crawled = including (dirs . ls . traversed . crawled)
 
 -- continually run the given fold until all branches hit dead ends,
 -- folding all elements along the way.
 -- TODO: maybe add 'recovering'?
 crawling :: Monoid r => Acting IO r FilePath FilePath -> Acting IO r FilePath FilePath
-crawling fld = unioned id (fld . crawling fld)
+crawling fld = including (fld . crawling fld)
 
 absolute :: MonadicFold IO FilePath FilePath
 absolute = act makeAbsolute

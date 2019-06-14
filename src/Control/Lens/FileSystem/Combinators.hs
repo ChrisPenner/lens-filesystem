@@ -37,8 +37,11 @@ filteredM predicate f a = effective go
 -- unioned :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a
 -- unioned additionalFold currentFold s = currentFold s *> (additionalFold currentFold s)
 
-unioned :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a -> LensLike' f a a
-unioned fold1 fold2 nextFold s = fold1 nextFold s *> fold2 nextFold s
+merging :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a -> LensLike' f a a
+merging fold1 fold2 nextFold s = fold1 nextFold s *> fold2 nextFold s
+
+including :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a
+including = merging id
 
 infixr 8 !%=
 (!%=) :: (Monad m) => Acting m b s a -> (a -> m b) -> s -> m b
