@@ -26,6 +26,9 @@ dependencies:
 - directory
 - filepath
 
+ghc-options:
+- -Wall
+
 library:
   source-dirs: src
 
