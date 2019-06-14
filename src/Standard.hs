@@ -95,15 +95,17 @@ action !!%~ f = (^!! action . to f)
 -- TODO: generalize this to not need monoid??
 --
 -- try :: (Alternative m, Monoid r, Effective m r f) => ((a -> f a) -> s -> f s) -> ((a -> f a) -> s -> f s)
-try :: (Monad m, Alternative m, Monoid r) => Acting m r s a -> Acting m r s a
-try fld f s = effective (ineffective (fld f s) <|> pure mempty)
+tryAndBail :: (Monad m, Alternative m, Monoid r) => Acting m r s a -> Acting m r s a
+tryAndBail fld f s = effective (ineffective (fld f s) <|> pure mempty)
 
--- |
-tryFallback :: (Monad m, Alternative m) => Acting m r a a -> Acting m r a a
-tryFallback fld f a = effective (ineffective (fld f a) <|> ineffective (f a))
+tryOrContinue :: (Monad m, Alternative m) => Acting m r a a -> Acting m r a a
+tryOrContinue = flip tryCatch pure
+
+tryCatch :: (Monad m, Alternative m) => Acting m r s b -> (s -> m b) -> Acting m r s b
+tryCatch fld handler f a = effective (ineffective (fld f a) <|> (handler a >>= ineffective . f))
 
 -- tryExpand :: (Monad m, Alternative m, Monoid r) => Acting m r a a -> Acting m r a a
--- tryExpand fld = adding (try fld)
+-- tryExpand fld = adding (tryOrContinue fld)
 
 filteredM :: (Monad m, Monoid r) => (a -> m Bool) -> Acting m r a a
 filteredM predicate f a = effective go
@@ -120,14 +122,14 @@ files :: (Monoid r) => Acting IO r FilePath FilePath
 files = filteredM doesFileExist
 
 symLinked :: Monoid r => Acting IO r FilePath FilePath
-symLinked = tryFallback (act getSymbolicLinkTarget)
+symLinked = tryCatch (act getSymbolicLinkTarget) pure
 
 crawled :: Monoid r => Acting IO r FilePath FilePath
-crawled = tryFallback (ls . traversed . crawled)
+crawled = tryOrContinue (ls . traversed . crawled)
 
 -- | ADDS a fold to existing values
 adding :: Fold a a -> Fold a a
-adding t  f = phantom . traverse_ f . (pure <> toListOf t)
+adding addFold restFold s =  restFold s *> (addFold restFold s)
 
 data Config = Config
     { _workDir :: FilePath
@@ -149,7 +151,8 @@ main = do
     -- r <- Config "." & workDir . ls . traversed !!%= pure
     -- r <- Config "." & workDir . ls . traversed . try ls . traversed !!%~ id
     -- Config "." ^! workDir . ls . traversed . dirs . act print
-    Config "." ^! workDir . crawled . symLinked . absoluting . act print
+    -- Config "." ^! workDir . crawled . symLinked . absoluting . act print
+    Config "." ^! workDir . ls . traversed . symLinked . act print
     -- dirContents <- "." ^!! ls . traversed . filteredM doesDirectoryExist
     -- print dirContents
     return ()
