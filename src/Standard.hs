@@ -15,8 +15,10 @@ import Control.Lens.Action.Type
 import System.Directory
 import System.FilePath.Posix
 import Data.Functor
+import Data.Functor.Contravariant
 import Control.Monad
 import Control.Applicative
+import Data.Foldable
 
 -- data File = File{ filePath :: FilePath, contents :: String }
 data FileType = Dir | File | SymLink
@@ -37,10 +39,13 @@ dir = file
 
 -- ls :: MonadicFold IO FilePath [FilePath]
 ls :: MonadicFold IO FilePath [FilePath]
-ls = act listDirectory
+ls = act (\fp -> (fmap (fp </>)) <$> listDirectory fp)
 
 mv :: FilePath -> MonadicFold IO FilePath ()
 mv filePath = act (flip renamePath filePath)
+
+absoluting :: MonadicFold IO FilePath FilePath
+absoluting = act makeAbsolute
 
 
 infixr 8 !%=
@@ -87,17 +92,20 @@ action !!%~ f = (^!! action . to f)
 --              else pure a
 
 -- | 'try' will run a given monadic fold, recovering on failure
--- TODO: generalize this to not need monoid
+-- TODO: generalize this to not need monoid??
 --
 -- try :: (Alternative m, Monoid r, Effective m r f) => ((a -> f a) -> s -> f s) -> ((a -> f a) -> s -> f s)
 try :: (Monad m, Alternative m, Monoid r) => Acting m r s a -> Acting m r s a
 try fld f s = effective (ineffective (fld f s) <|> pure mempty)
 
 -- |
-iterating :: (Monad m, Alternative m) => Acting m r a a -> Acting m r a a
-iterating fld f a = effective (ineffective (fld f a) <|> ineffective (f a))
+tryFallback :: (Monad m, Alternative m) => Acting m r a a -> Acting m r a a
+tryFallback fld f a = effective (ineffective (fld f a) <|> ineffective (f a))
 
--- filteredM :: (Monad m, Monoid r) => (a -> m Bool) -> Acting m r a a
+-- tryExpand :: (Monad m, Alternative m, Monoid r) => Acting m r a a -> Acting m r a a
+-- tryExpand fld = adding (try fld)
+
+filteredM :: (Monad m, Monoid r) => (a -> m Bool) -> Acting m r a a
 filteredM predicate f a = effective go
   where
     go = do
@@ -105,8 +113,21 @@ filteredM predicate f a = effective go
         True -> ineffective (f a)
         False -> pure mempty
 
-crawl :: Monoid r => Acting IO r FilePath FilePath
-crawl = iterating (ls . traversed . crawl)
+dirs :: (Monoid r) => Acting IO r FilePath FilePath
+dirs = filteredM doesDirectoryExist
+
+files :: (Monoid r) => Acting IO r FilePath FilePath
+files = filteredM doesFileExist
+
+symLinked :: Monoid r => Acting IO r FilePath FilePath
+symLinked = tryFallback (act getSymbolicLinkTarget)
+
+crawled :: Monoid r => Acting IO r FilePath FilePath
+crawled = tryFallback (ls . traversed . crawled)
+
+-- | ADDS a fold to existing values
+adding :: Fold a a -> Fold a a
+adding t  f = phantom . traverse_ f . (pure <> toListOf t)
 
 data Config = Config
     { _workDir :: FilePath
@@ -127,8 +148,8 @@ main = do
     -- r <- Config "." & workDir . file "README.md" !%~ pure
     -- r <- Config "." & workDir . ls . traversed !!%= pure
     -- r <- Config "." & workDir . ls . traversed . try ls . traversed !!%~ id
-    r <- Config "." ^! workDir . ls . traversed . filteredM doesDirectoryExist . act print
-    print r
+    -- Config "." ^! workDir . ls . traversed . dirs . act print
+    Config "." ^! workDir . crawled . symLinked . absoluting . act print
     -- dirContents <- "." ^!! ls . traversed . filteredM doesDirectoryExist
     -- print dirContents
     return ()
