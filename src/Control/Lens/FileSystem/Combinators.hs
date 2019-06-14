@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 module Control.Lens.FileSystem.Combinators where
 
 import Control.Lens
@@ -33,8 +34,11 @@ filteredM predicate f a = effective go
 -- unioned :: Applicative f => ((t -> f a) -> t -> f b) -> (t -> f a) -> t -> f b
 -- The Contravariant restraint is redundant; but prevents using this as a traversal which
 -- would have unexpected behaviour
-unioned :: (Applicative f, Contravariant f) => LensLike f a a a a -> LensLike f a a a a
-unioned additionalFold currentFold s = currentFold s *> (additionalFold currentFold s)
+-- unioned :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a
+-- unioned additionalFold currentFold s = currentFold s *> (additionalFold currentFold s)
+
+unioned :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a -> LensLike' f a a
+unioned fold1 fold2 nextFold s = fold1 nextFold s *> fold2 nextFold s
 
 infixr 8 !%=
 (!%=) :: (Monad m) => Acting m b s a -> (a -> m b) -> s -> m b

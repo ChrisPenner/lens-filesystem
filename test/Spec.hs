@@ -1,8 +1,10 @@
+{-# LANGUAGE LambdaCase #-}
 import Control.Lens
 import Control.Lens.Action
 import Control.Lens.FileSystem
 import System.Directory
 import Test.Hspec
+import Data.Char
 
 baseDir :: FilePath
 baseDir = "test" </> "data"
@@ -73,12 +75,53 @@ main = do
             "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
 
 
+      describe "!%=" $ do
+        it "should run an action over results, folding them together" $ do
+          ("." & branching ["flat", "nested"] !%= pure . (:[]) . (fmap toUpper))
+            `shouldReturn` ["./FLAT","./NESTED"]
+      describe "!!%=" $ do
+        it "should run an action over results, collecting them in a list" $ do
+          ("." & branching ["flat", "nested"] !!%= pure . (fmap toUpper))
+            `shouldReturn`["./FLAT","./NESTED"]
+
+      describe "!%~" $ do
+        it "should run an action over results, folding them together" $ do
+          ("." & branching ["flat", "nested"] !%~ (:[]) . (fmap toUpper))
+            `shouldReturn` ["./FLAT","./NESTED"]
+      describe "!!%~" $ do
+        it "should run an action over results, collecting them in a list" $ do
+          ("." & branching ["flat", "nested"] !!%~ (fmap toUpper))
+            `shouldReturn`["./FLAT","./NESTED"]
+
+      describe "recovering" $ do
+        it "should recover from exceptions with an empty fold" $ do
+          [1 :: Int, 2, 3] ^!! traversed . recovering (act (\case 2 -> fail "nope"; n -> pure n))
+            `shouldReturn` [1, 3]
+
+      describe "tryOrContinue" $ do
+        it "should return input when fold fails" $ do
+          [1 :: Int, 2, 3] ^!! traversed . tryOrContinue (act (\case 2 -> fail "nope"; n -> pure (10*n)))
+            `shouldReturn` [10, 2, 30]
+
+      describe "tryCatch" $ do
+        it "should recover from failure using handler" $ do
+          [1 :: Int, 2, 3] ^!! traversed . tryCatch (act (\case 2 -> fail "nope"; n -> pure (10*n))) (pure . (*100))
+            `shouldReturn` [10, 200, 30]
+
+      describe "filteredM" $ do
+        it "should filter out failing elements" $ do
+          [1 :: Int, 2, 3] ^!! traversed . filteredM (pure . odd)
+            `shouldReturn` [1, 3]
+
+      describe "unioned" $ do
+        it "should combine elements from multiple folds" $ do
+          [1 :: Int, 2, 3] ^!! traversed . unioned (to (*10)) (to (*100))
+            `shouldReturn` [10,100,20,200,30,300]
+
 
 
 -- main :: IO ()
 -- main = do
-    -- fileContents <- "." ^!! file "README.md" . contents . lined
-    -- print fileContents
     -- "." ^!! file "README.md" . contents . lined !%~ print
     -- "." &! file "README.md" . contents . lined !%~ print
     -- "." &! file "README.md" !%~ flip renamePath "README2.md"

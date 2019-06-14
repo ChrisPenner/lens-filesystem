@@ -15,10 +15,23 @@ module Control.Lens.FileSystem
     , contents
     , exts
     , crawled
+    , crawling
     , absolute
     , withPerms
     , symLinksFollowed
     , localized
+
+    -- * Combinators
+    , recovering
+    , tryOrContinue
+    , tryCatch
+    , filteredM
+    , unioned
+
+    , (!%~)
+    , (!!%~)
+    , (!%=)
+    , (!!%=)
     , (</>)
     ) where
 
@@ -28,7 +41,7 @@ import Control.Lens.FileSystem.Combinators
 import System.Directory
 import System.FilePath.Posix
 
-ls :: MonadicFold IO FilePath [FilePath]
+ls :: Acting IO r FilePath [FilePath]
 ls = act (\fp -> (fmap (fp </>)) <$> listDirectory fp)
 
 path :: FilePath -> Getter FilePath FilePath
@@ -55,7 +68,13 @@ exts extList = filtered check
     check fp = drop 1 (takeExtension fp) `elem` extList
 
 crawled :: Monoid r => Acting IO r FilePath FilePath
-crawled = unioned (recovering (ls . traversed . crawled))
+crawled = unioned id (dirs . ls . traversed . crawled)
+
+-- continually run the given fold until all branches hit dead ends,
+-- folding all elements along the way.
+-- TODO: maybe add 'recovering'?
+crawling :: Monoid r => Acting IO r FilePath FilePath -> Acting IO r FilePath FilePath
+crawling fld = unioned id (fld . crawling fld)
 
 absolute :: MonadicFold IO FilePath FilePath
 absolute = act makeAbsolute
