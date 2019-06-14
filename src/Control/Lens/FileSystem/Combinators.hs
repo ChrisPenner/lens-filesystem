@@ -5,7 +5,6 @@ import Control.Lens
 import Control.Lens.Action
 import Control.Lens.Action.Internal
 import Control.Applicative
-import System.FilePath.Posix
 
 -- | 'recovering' will run a given monadic fold, recovering with an empty fold on failure
 --
