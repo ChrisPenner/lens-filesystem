@@ -17,6 +17,8 @@ module Control.Lens.FileSystem
     , crawled
     , absolute
     , withPerms
+    , symLinksFollowed
+    , localized
     , (</>)
     ) where
 
@@ -70,5 +72,3 @@ symLinksFollowed = tryCatch (act getSymbolicLinkTarget) pure
 
 localized :: (Conjoined p, Effective IO r f) => IO a -> Optic' p f FilePath a
 localized action = act (flip withCurrentDirectory action)
-
-

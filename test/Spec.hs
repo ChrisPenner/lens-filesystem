@@ -56,6 +56,21 @@ main = do
             , absRoot </> "flat" </> "file.md"
             , absRoot </> "flat" </> "dir"
             ]
+      describe "withPerms" $ do
+        it "should filter based on permissions" $ do
+          "permissions" ^!! ls . traversed . withPerms [executable] `shouldReturn`
+            ["permissions/exe" ]
+          "permissions" ^!! ls . traversed . withPerms [readable] `shouldReturn`
+            ["permissions/readonly", "permissions/exe" ]
+        it "should 'and' permissions together" $ do
+          "permissions" ^!! ls . traversed . withPerms [executable, readable, writable] `shouldReturn`
+            ["permissions/exe" ]
+      describe "symLinksFollowed" $ do
+        it "should rewrite symlinks" $ do
+          "symLinked" ^!! symLinksFollowed `shouldReturn` ["flat"]
+      describe "localized" $ do
+        it "should run actions in a given dir" $ do
+            "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
 
 
 
