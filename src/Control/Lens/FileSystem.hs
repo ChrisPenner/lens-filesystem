@@ -7,8 +7,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Control.Lens.FileSystem
     ( ls
+    , ls'ed
     , path
-    , path'
+    , pathL
     , branching
     , dirs
     , files
@@ -29,11 +30,12 @@ module Control.Lens.FileSystem
     , merging
     , including
 
-    , (!%~)
-    , (!!%~)
-    , (!%=)
-    , (!!%=)
+    , (%!)
+    , (%!!)
+
     , (</>)
+
+    , module System.FilePath.Lens
     ) where
 
 import Control.Lens
@@ -41,15 +43,19 @@ import Control.Lens.Action
 import Control.Lens.FileSystem.Combinators
 import System.Directory
 import System.FilePath.Posix
+import System.FilePath.Lens
 
 ls :: Acting IO r FilePath [FilePath]
 ls = act (\fp -> (fmap (fp </>)) <$> listDirectory fp)
 
+ls'ed :: Monoid r => Acting IO r FilePath FilePath
+ls'ed = ls . traversed
+
 path :: FilePath -> Getter FilePath FilePath
 path filePath = to (</> filePath)
 
-path' :: [FilePath] -> Getter FilePath FilePath
-path' filePaths = to (</> joinPath filePaths)
+pathL :: [FilePath] -> Getter FilePath FilePath
+pathL filePaths = to (</> joinPath filePaths)
 
 branching :: [FilePath] -> Fold FilePath FilePath
 branching filePaths = folding (\fp -> (fp </>) <$> filePaths)

@@ -19,16 +19,19 @@ main = do
           "flat" ^! ls `shouldReturn` ["flat/file.txt","flat/file.md","flat/dir"]
         it "should allow traversing deeper" $ do
           "flat" ^!! ls . traversed `shouldReturn` ["flat/file.txt","flat/file.md","flat/dir"]
+      describe "ls'ed" $ do
+        it "should behave like 'ls' but with traversal" $ do
+          "flat" ^!! ls'ed `shouldReturn` ["flat/file.txt","flat/file.md","flat/dir"]
       describe "path" $ do
         it "should add to path" $ do
           "nested" ^! path "top" `shouldReturn` "nested/top"
         it "should add deep paths to path" $ do
           "nested" ^! path ("top" </> "mid" </> "bottom") `shouldReturn` "nested/top/mid/bottom"
-      describe "path'" $ do
+      describe "pathL" $ do
         it "should add to path" $ do
-          "nested" ^! path' ["top"] `shouldReturn` "nested/top"
-        it "should add deep path' to path" $ do
-          "nested" ^! path' ["top", "mid", "bottom"] `shouldReturn` "nested/top/mid/bottom"
+          "nested" ^! pathL ["top"] `shouldReturn` "nested/top"
+        it "should add deep pathL to path" $ do
+          "nested" ^! pathL ["top", "mid", "bottom"] `shouldReturn` "nested/top/mid/bottom"
       describe "branching" $ do
         it "should follow many paths" $ do
           "nested" ^! branching ["top", "peak"] . ls `shouldReturn`
@@ -75,22 +78,13 @@ main = do
             "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
 
 
-      describe "!%=" $ do
+      describe "%!" $ do
         it "should run an action over results, folding them together" $ do
-          ("." & branching ["flat", "nested"] !%= pure . (:[]) . (fmap toUpper))
+          ("." & branching ["flat", "nested"] %! pure . (:[]) . (fmap toUpper))
             `shouldReturn` ["./FLAT","./NESTED"]
-      describe "!!%=" $ do
+      describe "%!!" $ do
         it "should run an action over results, collecting them in a list" $ do
-          ("." & branching ["flat", "nested"] !!%= pure . (fmap toUpper))
-            `shouldReturn`["./FLAT","./NESTED"]
-
-      describe "!%~" $ do
-        it "should run an action over results, folding them together" $ do
-          ("." & branching ["flat", "nested"] !%~ (:[]) . (fmap toUpper))
-            `shouldReturn` ["./FLAT","./NESTED"]
-      describe "!!%~" $ do
-        it "should run an action over results, collecting them in a list" $ do
-          ("." & branching ["flat", "nested"] !!%~ (fmap toUpper))
+          ("." & branching ["flat", "nested"] %!! pure . (fmap toUpper))
             `shouldReturn`["./FLAT","./NESTED"]
 
       describe "recovering" $ do
