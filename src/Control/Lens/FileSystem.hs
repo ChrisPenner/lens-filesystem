@@ -20,7 +20,7 @@ module Control.Lens.FileSystem
     , absolute
     , withPerms
     , symLinksFollowed
-    , localized
+    -- , localized
 
     -- * Combinators
     , recovering

@@ -29,7 +29,7 @@ filteredM predicate f a = effective go
         False -> pure mempty
 
 
-merging :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a -> LensLike' f a a
+merging :: (Applicative f, Contravariant f) => LensLike' f s a -> LensLike' f s a -> LensLike' f s a
 merging fold1 fold2 nextFold s = fold1 nextFold s *> fold2 nextFold s
 
 including :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f a a

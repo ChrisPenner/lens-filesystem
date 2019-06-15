@@ -73,9 +73,9 @@ main = do
       describe "symLinksFollowed" $ do
         it "should rewrite symlinks" $ do
           "symLinked" ^!! symLinksFollowed `shouldReturn` ["flat"]
-      describe "localized" $ do
-        it "should run actions in a given dir" $ do
-            "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
+      -- describe "localized" $ do
+      --   it "should run actions in a given dir" $ do
+      --       "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
 
 
       describe "%!" $ do
