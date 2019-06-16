@@ -30,9 +30,6 @@ module Control.Lens.FileSystem
     , merging
     , including
 
-    , (%!)
-    , (%!!)
-
     , (</>)
 
     , module System.FilePath.Lens
@@ -44,6 +41,8 @@ import Control.Lens.FileSystem.Combinators
 import System.Directory
 import System.FilePath.Posix
 import System.FilePath.Lens
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 
 ls :: Acting IO r FilePath [FilePath]
 ls = act (\fp -> (fmap (fp </>)) <$> listDirectory fp)

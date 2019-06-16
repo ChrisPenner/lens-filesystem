@@ -78,14 +78,14 @@ main = do
       --       "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
 
 
-      describe "%!" $ do
-        it "should run an action over results, folding them together" $ do
-          ("." & branching ["flat", "nested"] %! pure . (:[]) . (fmap toUpper))
-            `shouldReturn` ["./FLAT","./NESTED"]
-      describe "%!!" $ do
-        it "should run an action over results, collecting them in a list" $ do
-          ("." & branching ["flat", "nested"] %!! pure . (fmap toUpper))
-            `shouldReturn`["./FLAT","./NESTED"]
+      -- describe "%!" $ do
+      --   it "should run an action over results, folding them together" $ do
+      --     ("." & branching ["flat", "nested"] %! pure . (:[]) . (fmap toUpper))
+      --       `shouldReturn` ["./FLAT","./NESTED"]
+      -- describe "%!!" $ do
+      --   it "should run an action over results, collecting them in a list" $ do
+      --     ("." & branching ["flat", "nested"] %!! pure . (fmap toUpper))
+      --       `shouldReturn`["./FLAT","./NESTED"]
 
       describe "recovering" $ do
         it "should recover from exceptions with an empty fold" $ do

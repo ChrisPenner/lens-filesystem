@@ -36,12 +36,18 @@ including :: (Applicative f, Contravariant f) => LensLike' f a a -> LensLike' f 
 including = merging id
 
 infixr 8 %!
-(%!) :: (Monad m) => Acting m b s a -> (a -> m b) -> s -> m b
-(%!) action f = perform (action . act f)
+-- type LensLike f s t a b = (a -> f b) -> s -> f t
+-- (%!) :: (Monad m) => LensLike m s t a b -> (a -> m b) -> s -> m t
+(%!) :: (Monad m) => ((a -> m b) -> s -> m t) -> (a -> m b) -> s -> m t
+(%!) l f s = l f s
 
-infixr 8 %!!
-(%!!) :: (Monad m) => Acting m [b] s a -> (a -> m b) -> s -> m [b]
-action %!! f = (^!! action . act f)
+-- infixr 8 %!
+-- (%!) :: (Monad m) => Acting m b s a -> (a -> m b) -> s -> m b
+-- (%!) action f = perform (action . act f)
+
+-- infixr 8 %!!
+-- (%!!) :: (Monad m) => Acting m [b] s a -> (a -> m b) -> s -> m [b]
+-- action %!! f = (^!! action . act f)
 
 -- infixr 8 !%~
 -- (!%~) :: (Monad m) => Acting m b s a -> (a -> b) -> s -> m b

@@ -25,6 +25,7 @@ dependencies:
 - lens-action
 - directory
 - filepath
+- text
 
 ghc-options:
 - -Wall
