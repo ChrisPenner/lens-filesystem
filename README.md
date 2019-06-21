@@ -8,11 +8,15 @@ This is pretty experimental; I wouldn't recommend using it in production code at
 Using the read-only operations should be fine, but I'd strongly recommend doing lots of testing
 with `print` before you run destructive filesystem operations.
 
+This library is meant to be used in conjunction with the `lens-action` library.
+
 The interface to this package could change at any time.
 
 Examples:
 
 ```haskell
+Many of the combinators you see here come from `lens-action`.
+
 -- Find all files in ~ or ~/config with a .vim or .conf extension
 >>> "/Users/chris" ^!! including (path "config") . ls . traversed . exts ["vim", "conf"]
 ["/Users/chris/.vim","/Users/chris/tmux.conf","/Users/chris/config/plugins.vim"]

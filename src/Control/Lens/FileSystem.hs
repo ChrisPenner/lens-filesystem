@@ -1,3 +1,17 @@
+{-|
+Module      : Control.Lens.FileSystem
+Description : Lensy File system combinators
+Copyright   : (c) Chris Penner, 2019
+License     : BSD3
+
+Note that this package is experimental, test things carefully before performing destructive
+operations. I'm not responsible if things go wrong.
+
+This package is meant to be used alongside combinators from 'lens-action'; for example
+'^!', '^!!' and 'act'.
+-}
+
+
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TupleSections #-}
@@ -44,7 +58,7 @@ module Control.Lens.FileSystem
 
 import Control.Lens
 import Control.Lens.Action
-import Control.Lens.FileSystem.Combinators
+import Control.Lens.FileSystem.Internal.Combinators
 import System.Directory
 import System.FilePath.Posix
 import System.FilePath.Lens

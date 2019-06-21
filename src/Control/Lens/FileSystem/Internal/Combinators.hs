@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
-module Control.Lens.FileSystem.Combinators where
+module Control.Lens.FileSystem.Internal.Combinators where
 
 import Control.Lens
 import Control.Lens.Action
