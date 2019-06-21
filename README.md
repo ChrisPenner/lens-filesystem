@@ -1,6 +1,16 @@
-# lens-fs
+# lens-filesystem
 
-examples:
+[HACKAGE](https://hackage.haskell.org/package/lens-filesystem)
+
+A lensy style interface to your filesystem.
+
+This is pretty experimental; I wouldn't recommend using it in production code at the moment;
+Using the read-only operations should be fine, but I'd strongly recommend doing lots of testing
+with `print` before you run destructive filesystem operations.
+
+The interface to this package could change at any time.
+
+Examples:
 
 ```haskell
 -- Find all files in ~ or ~/config with a .vim or .conf extension
@@ -21,5 +31,11 @@ examples:
 , "/Users/chris/dev/lens-fs/src/Control/Lens/FileSystem.hs" ]
 
 -- Find all executables in the 'scripts' directory and copy them to bin
->>> "scripts" & crawled . withPerms [executable] %! (`copyFile` "/Users/chris/bin")
+>>> "scripts" ^! crawled . withPerms [executable] . act (`copyFile` "/Users/chris/bin")
+
+-- Read all markdown files and get their contents with filename
+>>> "./test" ^!! crawled . exts ["md"] . contents . withIndex
+[("./test/data/flat/file.md","markdown\n")]
 ```
+
+See more examples in the [tests](./test/Spec.hs)

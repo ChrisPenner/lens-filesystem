@@ -1,10 +1,10 @@
-name:                lens-fs
+name:                lens-filesystem
 version:             0.0.0.0
-github:              "githubuser/lens-fs"
+github:              "ChrisPenner/lens-filesystem"
 license:             BSD3
-author:              "Author name here"
+author:              "Chris Penner"
 maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+copyright:           "2019 Chris Penner"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/lens-fs#readme>
+description:         Please see the README on GitHub at <https://github.com/ChrisPenner/lens-fs#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -33,7 +33,7 @@ library:
   source-dirs: src
 
 tests:
-  lens-fs-test:
+  lens-filesystem-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -41,5 +41,5 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - lens-fs
+    - lens-filesystem
     - hspec
