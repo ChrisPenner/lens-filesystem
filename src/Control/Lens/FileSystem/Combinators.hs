@@ -9,7 +9,7 @@ import Control.Applicative
 
 -- | If a given fold fails (e.g. with an exception), recover and simply return 0 elements
 -- rather than crashing.
-recovering :: (Monad m, Alternative m, Monoid r) => Acting m r s a -> Acting m r s a
+recovering :: (Monad m, Alternative m, Monoid r, Effective m r f) => Over' p f s a -> Over' p f s a
 recovering fld f s = effective (ineffective (fld f s) <|> pure mempty)
 
 -- | Try the given fold, if it throws an exception then return the input as the output instead
