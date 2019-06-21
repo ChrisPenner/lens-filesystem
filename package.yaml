@@ -1,5 +1,5 @@
 name:                lens-fs
-version:             0.1.0.0
+version:             0.0.0.0
 github:              "githubuser/lens-fs"
 license:             BSD3
 author:              "Author name here"
@@ -25,7 +25,6 @@ dependencies:
 - lens-action
 - directory
 - filepath
-- text
 
 ghc-options:
 - -Wall
