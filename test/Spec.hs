@@ -4,7 +4,6 @@ import Control.Lens.Action
 import Control.Lens.FileSystem
 import System.Directory
 import Test.Hspec
-import Data.Char
 
 baseDir :: FilePath
 baseDir = "test" </> "data"
@@ -73,19 +72,6 @@ main = do
       describe "symLinksFollowed" $ do
         it "should rewrite symlinks" $ do
           "symLinked" ^!! symLinksFollowed `shouldReturn` ["flat"]
-      -- describe "localized" $ do
-      --   it "should run actions in a given dir" $ do
-      --       "flat" ^! localized getCurrentDirectory `shouldReturn` absRoot </> "flat"
-
-
-      -- describe "%!" $ do
-      --   it "should run an action over results, folding them together" $ do
-      --     ("." & branching ["flat", "nested"] %! pure . (:[]) . (fmap toUpper))
-      --       `shouldReturn` ["./FLAT","./NESTED"]
-      -- describe "%!!" $ do
-      --   it "should run an action over results, collecting them in a list" $ do
-      --     ("." & branching ["flat", "nested"] %!! pure . (fmap toUpper))
-      --       `shouldReturn`["./FLAT","./NESTED"]
 
       describe "recovering" $ do
         it "should recover from exceptions with an empty fold" $ do
