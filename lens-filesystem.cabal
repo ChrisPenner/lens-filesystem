@@ -34,8 +34,6 @@ library
   exposed-modules:     Control.Lens.FileSystem
                      , Control.Lens.FileSystem.Internal.Combinators
 
-  other-modules:       Paths_lens_filesystem
-
   other-extensions:    RankNTypes
                      , KindSignatures
                      , TupleSections
@@ -53,7 +51,6 @@ test-suite lens-filesystem-test
   main-is:             Spec.hs
   type:                exitcode-stdio-1.0
 
-  other-modules:       Paths_lens_filesystem
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
 
   build-depends:       hspec
