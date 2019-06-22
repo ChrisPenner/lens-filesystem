@@ -4,6 +4,7 @@ import Control.Lens.Action
 import Control.Lens.FileSystem
 import System.Directory
 import Test.Hspec
+import Data.List
 
 baseDir :: FilePath
 baseDir = "test" </> "data"
@@ -15,12 +16,12 @@ main = do
     hspec $ do
       describe "ls" $ do
         it "should return files and dirs with full path" $ do
-          "flat" ^! ls `shouldReturn` ["flat/file.txt","flat/file.md","flat/dir"]
+          sort <$> "flat" ^! ls `shouldReturn` ["flat/dir","flat/file.md","flat/file.txt"]
         it "should allow traversing deeper" $ do
-          "flat" ^!! ls . traversed `shouldReturn` ["flat/file.txt","flat/file.md","flat/dir"]
+          sort <$> "flat" ^!! ls . traversed `shouldReturn` ["flat/dir","flat/file.md","flat/file.txt"]
       describe "ls'ed" $ do
         it "should behave like 'ls' but with traversal" $ do
-          "flat" ^!! ls'ed `shouldReturn` ["flat/file.txt","flat/file.md","flat/dir"]
+          sort <$> "flat" ^!! ls'ed `shouldReturn` ["flat/dir","flat/file.md","flat/file.txt"]
       describe "path" $ do
         it "should add to path" $ do
           "nested" ^! path "top" `shouldReturn` "nested/top"
@@ -33,39 +34,39 @@ main = do
           "nested" ^! pathL ["top", "mid", "bottom"] `shouldReturn` "nested/top/mid/bottom"
       describe "branching" $ do
         it "should follow many paths" $ do
-          "nested" ^! branching ["top", "peak"] . ls `shouldReturn`
-            ["nested/top/mid","nested/peak/trees.txt","nested/peak/base"]
+          sort <$> "nested" ^! branching ["top", "peak"] . ls `shouldReturn`
+            ["nested/peak/base","nested/peak/trees.txt","nested/top/mid"]
       describe "dirs" $ do
         it "should filter to only dirs" $ do
           "flat" ^!! ls . traversed . dirs `shouldReturn` ["flat/dir"]
       describe "files" $ do
         it "should filter to only files" $ do
-          "flat" ^!! ls . traversed . files `shouldReturn` ["flat/file.txt", "flat/file.md"]
+          sort <$> "flat" ^!! ls . traversed . files `shouldReturn` ["flat/file.md", "flat/file.txt"]
       describe "contents" $ do
         it "should get file contents" $ do
-          "flat" ^!! ls . traversed . files . contents `shouldReturn` ["text\n", "markdown\n"]
+          sort <$> "flat" ^!! ls . traversed . files . contents `shouldReturn` ["markdown\n", "text\n"]
       describe "exts" $ do
         it "should filter by extension" $ do
-          "flat" ^!! ls . traversed . exts ["", "txt"] `shouldReturn` ["flat/file.txt", "flat/dir"]
+          sort <$> "flat" ^!! ls . traversed . exts ["", "txt"] `shouldReturn` ["flat/dir", "flat/file.txt"]
       describe "crawled" $ do
         it "should find ALL files and dirs under root including root" $ do
-          "nested" ^!! crawled `shouldReturn`
-            [ "nested", "nested/top", "nested/top/mid", "nested/top/mid/bottom"
-            , "nested/top/mid/bottom/floor.txt", "nested/peak", "nested/peak/trees.txt"
-            , "nested/peak/base", "nested/peak/base/basecamp.txt"]
+          sort <$> "nested" ^!! crawled `shouldReturn`
+            ["nested","nested/peak","nested/peak/base","nested/peak/base/basecamp.txt"
+            , "nested/peak/trees.txt","nested/top","nested/top/mid","nested/top/mid/bottom"
+            , "nested/top/mid/bottom/floor.txt"]
       describe "absoluted" $ do
         it "should make paths absolute" $ do
-          "flat" ^!! ls . traversed . absolute `shouldReturn`
-            [ absRoot </> "flat" </> "file.txt"
+          sort <$> "flat" ^!! ls . traversed . absolute `shouldReturn`
+            [ absRoot </> "flat" </> "dir"
             , absRoot </> "flat" </> "file.md"
-            , absRoot </> "flat" </> "dir"
+            , absRoot </> "flat" </> "file.txt"
             ]
       describe "withPerms" $ do
         it "should filter based on permissions" $ do
           "permissions" ^!! ls . traversed . withPerms [executable] `shouldReturn`
             ["permissions/exe" ]
-          "permissions" ^!! ls . traversed . withPerms [readable] `shouldReturn`
-            ["permissions/readonly", "permissions/exe" ]
+          sort <$> "permissions" ^!! ls . traversed . withPerms [readable] `shouldReturn`
+            ["permissions/exe", "permissions/readonly"]
         it "should 'and' permissions together" $ do
           "permissions" ^!! ls . traversed . withPerms [executable, readable, writable] `shouldReturn`
             ["permissions/exe" ]

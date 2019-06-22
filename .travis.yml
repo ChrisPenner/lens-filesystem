@@ -9,8 +9,6 @@ cabal: "2.4"
 
 matrix:
   include:
-    # Test one build on Mac; one on Linux
-    - os: osx
     - ghc: "8.6.5"
     - ghc: "8.4.4"
 
