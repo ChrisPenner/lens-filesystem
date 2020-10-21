@@ -1,7 +1,7 @@
 cabal-version:       2.2
 
 name:                lens-filesystem
-version:             0.0.1.0
+version:             0.1.0.0
 synopsis:            Lens interface for your filesystem; still a bit experimental
 description:         Please see the README on GitHub at <https://github.com/ChrisPenner/lens-fs#readme>
 homepage:            https://github.com/ChrisPenner/lens-filesystem
@@ -21,10 +21,10 @@ source-repository head
 
 common commons
   build-depends:       base          >= 4.7    && < 5
-                     , directory    ^>= 1.3.1
+                     , directory    ^>= 1.3.6
                      , filepath     ^>= 1.4.2
-                     , lens         ^>= 4.17.1
-                     , lens-action  ^>= 0.2.3
+                     , lens         ^>= 4.18.1
+                     , lens-action  ^>= 0.2.4
 
   ghc-options:         -Wall
 
