@@ -13,7 +13,19 @@ maintainer:          christopher.penner@gmail.com
 copyright:           2019 Chris Penner
 category:            Control
 build-type:          Simple
-extra-source-files:  ChangeLog.md, README.md
+extra-source-files:
+  ChangeLog.md, README.md
+  -- mostly output of
+  -- $ find test/ -type f
+  test/data/permissions/readonly
+  test/data/permissions/exe
+  test/data/nested/peak/trees.txt
+  test/data/nested/peak/base/basecamp.txt
+  test/data/nested/top/mid/bottom/floor.txt
+  test/data/flat/file.txt
+  test/data/flat/dir/another-file.txt
+  test/data/flat/file.md
+  test/data/.dotfile
 
 source-repository head
   type: git
